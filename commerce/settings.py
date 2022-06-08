@@ -28,7 +28,7 @@ SECRET_KEY = '6ps8j!crjgrxt34cqbqn7x&b3y%(fny8k8nh21+qa)%ws3fh!q'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['', '127.0.0.1']
+ALLOWED_HOSTS = ['https://domaukcyjny.herokuapp.com/', '127.0.0.1']
 
 
 # Application definition
@@ -54,7 +54,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CART_SESSION_ID = 'cart'
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
-    'https://localhost:8000','',
+    'https://localhost:8000','https://domaukcyjny.herokuapp.com/',
 )
 
 MIDDLEWARE = [
