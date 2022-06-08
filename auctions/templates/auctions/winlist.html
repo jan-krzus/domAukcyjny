@@ -1,0 +1,39 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% load static %}
+<div class="container">
+{% if user.is_authenticated %}
+
+  <div style="padding: 40px 0 20px 0;">
+      <div style="text-align: center; justify-content: center;">
+      
+      {% if message %}
+      <div class="title">
+        <h3>{{ message }}</h3>
+      </div>
+      {% else %}
+      <div class="container">
+      <h2>Wygrane aukcje!</h2>
+
+      <section class="row" style="margin-left: 5px; width: 35%;">
+          {% for Listing in user_winlist %}
+              <article class="watchlist_card">
+                  <a href="{% url 'listingpage' Listing.pk %}">
+                      <img class="card-img-top" src="{{ Listing.image }}" alt="Card image cap">
+                  </a>
+                  <div class="card-body" style="padding: 15px;">
+                    <p class="card-title"><strong> {{ Listing.title }} </strong></p>
+                    <p class="card-subtitle mb-2 "  style="font-size: small;"> Cena:</strong> {{ Listing.highest_bid }}zł</p>
+              </div>
+              </article>
+              {% endfor %}
+      </section>  
+      </div>
+    </div>  
+  </div>  
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

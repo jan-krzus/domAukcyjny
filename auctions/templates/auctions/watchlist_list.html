@@ -1,0 +1,42 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% load static %}
+
+{% if user.is_authenticated %}
+<div class="view-container">
+  <div style="padding: 40px 0 20px 0; display: flex; justify-content: center;">
+      <div style="text-align: center;">
+      
+      {% if message %}
+      <div class="title shopping-content">
+        <h3>{{ message }}</h3>
+      </div>
+      {% else %}
+
+        <h2>Obserwowane</h2>
+
+      <section class="row" style="margin-left: 5px;">
+          {% for Listing in user_items %}
+              <article class="watchlist_card">
+                  <a href="{% url 'listingpage' Listing.pk %}">
+                      <img class="card-img-top" src="{{ Listing.image  }}" alt="Card image cap">
+                  </a>
+                  <div class="card-body" style="padding: 15px;">
+                    <p class="card-title"><strong> {{ Listing.title|truncatewords:10}} </strong></p>
+                    {% if listing.Winner != None %}
+                    <p class="card-subtitle mb-2 "  style="font-size: small;"> Aktualna cena:</strong> {{ Listing.starting_bid }}zł</p>
+                    {% else %}
+                    <p class="card-subtitle mb-2 "  style="font-size: small;"> Aktualna cena:</strong> {{ Listing.highest_bid }}zł</p>
+                    {% endif %}
+                    <p class="card-subtitle mb-2 text-muted" style="font-size: smaller;"> Utworzone {{ Listing.created_at }}</p>
+                  </div>
+              </article>
+              {% endfor %}
+      </section>  
+    </div>  
+</div>  
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

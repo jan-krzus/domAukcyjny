@@ -1,0 +1,301 @@
+{% extends "auctions/layout.html" %}
+
+<script>
+  function setTwoNumberDecimal(event) {
+    this.value = parseFloat(this.value).toFixed(2);
+}
+</script>
+
+{% load static %}
+{% block body %}
+
+{% if user.is_authenticated and user == seller and listing.active %}
+<div class="view-container" style="padding-top: 50px; height: 100vh;">
+  <div class="view-panel">
+    <div class="column" style="padding-left: 20px;">
+          <img class="column_card" src="{{ listing.image }}" alt="Card image cap" ><br>
+    </div>
+    <div class="column" style="width: 60%;">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ listing.title }}</h5>
+          <p class="card-text"> Sprzedawca: <b>{{ seller }}</b></p>
+          <hr>
+
+              <p class="card-text"> <strong>Cena początkowa:</strong> {{ listing.starting_bid }}zł</p>
+              <p class="card-text"> <strong>Cena:</strong> {{ listing.highest_bid }}zł</p>
+              <p class="card-text"> <strong>Podbijacz:</strong> <b>{{ winner }}</b></p>
+
+          <div >
+              <a href="{% url 'close_auction' listing.id %}" type="submit" role="button" class="btn btn-primary">Zakończ aukcje</a>
+          </div>
+          </div>
+      </div>
+      </div>
+  </div>
+  <div class="view-panel">
+     <div class="listing_card" >
+        <h4> {{ listing.title }}   </h4>
+        <p class="card-text">{{ listing.description }}</p>
+        <p  style="font-size: smaller;"> Utworzono {{ listing.created_at }}</p>
+    </div>
+  </div>
+
+  <hr style="background-color: rgb(156, 156, 156, 0.4); margin: 20px 25px 0px 25px;">
+
+  <div class="view-panel">
+    <div>
+      <h2 style="padding-bottom: 10px;"> Ostatnie komentarze</h2>
+      {% for comment in comment_list %}
+    <div class="card card_comment" style="padding: 0; width: 720px">
+        <div class="card-header">
+            Skomentował: <b>  {{ comment.commenter }}</b>  
+        </div>
+     <div class="card-body">
+         <blockquote class="blockquote mb-0">
+             <p>{{ comment }}</p>
+             <footer class="blockquote-footer"><cite title="Source Title">{{ comment.date }}</cite></footer>
+         </blockquote>
+     </div>
+    </div>
+    {% endfor %}
+  </div>
+  </div>
+
+{% elif user.is_authenticated and listing.active == 0 %}
+<div class="container">
+<div class="listing_footer">
+    {% if user == winner %}
+        <div class="alert alert-success" style="text-align: center" role="alert">
+            Wygrałeś aukcje! 
+        </div>
+    {% elif user != winner  and  user != seller %}
+        <div class="alert alert-success" style="text-align: center" role="alert">
+            Sorki nie tym razem! <br>
+            Aukcja nieaktywna
+        </div>
+    {% elif user == seller and winner == None %}
+        <div class="alert alert-success" style="text-align: center" role="alert">
+          <p  class="alert-heading">Aukcja nie ma zwycięzcy</p>
+            <div>
+              <a href="{% url 'reopen_auction' listing.id %}" type="submit" role="button" class="btn btn-primary btn-sm">Otwórz aukcje raz jeszcze</a>
+            </div>
+        </div>
+    {% elif user == listing and winner != None %}
+    <div class="alert alert-success" style="text-align: center;" role="alert">
+      <h4 class="alert-heading">Auction Closed!</h4>
+      <p class="mb-0">Wygrał : <b>{{winner}}</b></p>
+      <p class="mb-0">Cena : {{listing.highest_bid}}zł</p>
+
+  </div>
+    {% endif %}
+</div>
+</div>
+{% endif %}
+
+
+
+
+{% if user.is_authenticated and listing.active and user != listing.seller %}
+<div id="container" style="padding-top: 50px;">
+  <div class="view-panel" style="padding-left: 80px;">
+    <div class="column">
+          <img class="column_card" src="{{ listing.image }}" alt="Obraz aukcji" ><br>
+    </div>
+
+    <div class="column" style="width: 60%;">
+      <div class="column_card" >
+        <div class="row1">
+            <div class="card-body" > 
+              <h4 style="padding-bottom: 20px;font-size: x-large;" class="card-title"> {{ listing.title }}</h4>
+              <div class="card-text">Sprzedawca: <b>{{ seller }}</b> </div>
+              {% if winner !=  None %}
+                  <div class="card-text">Cena:<strong>  {{ listing.highest_bid }}zł</strong></div> 
+              {% elif winner ==  None %}
+                  <div class="card-text">Cena:<strong>  {{ listing.starting_bid }}zł</strong></div> 
+              {% endif %}
+
+        </div>
+        </div>
+
+        <div class="row2" >
+          <div class="card-body" > 
+          <form action="{% url 'make_bid' listing.id %}" method="POST" class="column" style="margin-right: 60px;">
+            {% csrf_token %}
+            <div style="color: rgba(10, 10, 10, 0.692);"> <h4 > Ustaw oferte </h4> </div>
+            {% if winner !=  None %}
+            <span  style="color: rgba(75, 84, 94, 0.74);font-size: 12px;font-family: Verdana, Geneva, Tahoma, sans-serif;"> 
+              Oferta za niska {{ listing.highest_bid }}zł
+            </span> 
+            <div style="padding: 12px 0 10px 0;" >
+              <input style="width: 100%;padding: 5px;" class="form-control form-control-sm" type="number" name="amount" min="{{ min_bid }}"  placeholder="{{ listing.highest_bid }}" value="{{ listing.highest_bid }}" step=".1" oninput="setTwoNumberDecimal">              
+            </div> 
+            {% elif winner ==  None %}
+            <span  style="color: rgba(75, 84, 94, 0.74);font-size: 12px;font-family: Verdana, Geneva, Tahoma, sans-serif;"> 
+              Oferta za niska {{ listing.starting_bid }}zł
+            </span>
+            <div style="padding: 12px 0 10px 0;" >
+              <input style="width: 100%;padding: 5px;" class="form-control form-control-sm" type="number" name="amount" min="{{ min_starting_bid }}"  placeholder="{{ listing.starting_bid }}" value="{{ listing.starting_bid }}" step=".1" oninput="setTwoNumberDecimal"> </div>
+            {% endif %}
+
+            <input class="btn btn-primary btn-sm" type="submit" value="Zalicytuj">
+            
+            <span>  
+              <a href="{% url 'add_to_wishlist' listing.id %}" type="submit" role="button" class="btn btn-primary btn-sm">Dodaj do obserwowanych</a>
+            </span>
+
+            {% if messages %}
+            <div class="box arrow-top">
+              {% for message in messages %}
+                      {{ message }}
+              {% endfor %}
+            </div>
+            {% endif %}
+        </form> 
+
+
+        {% if listing.highest_bid <= listing.desired_price  %}
+        <form action="{% url 'cart_add' listing.id %}" method="POST" class="column">
+            {% csrf_token %}
+            <div  style="color: rgba(10, 10, 10, 0.692);"> <h4 >Kup teraz </h4></div>
+            <div>Cena:<strong> {{listing.desired_price}} zł</strong></div> 
+            <div style="color: rgb(75, 84, 94);font-size: x-small;padding-left: 40px;">+ 9,99zł cena wysyłki</strong></div> 
+            <div style="padding: 50px 0 10px 0;">  
+              <a href="{% url 'cart_add' listing.id %}" type="submit" role="button" class="btn btn-primary btn-sm">Dodaj do koszyka</a>
+              <a href="{% url 'buy_now' listing.id %}" type="submit" role="button" class="btn btn-primary btn-sm">Kup teraz!</a>
+            </div>
+        </form> 
+        {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="view-panel" style="margin-top: 500px;">
+      <div class="listing_card" >
+        <h4 > {{ listing.title }}</h4>
+        <p >{{listing.description }}</p>
+
+        <p  style="font-size: smaller;"> Utworzono {{ listing.created_at }}</p>
+    </div>
+  </div>
+  <div class="view-panel">
+    <div class="listing_card">
+      <form action="{% url 'add_comment' listing.id %}" method="POST">
+          {% csrf_token %}
+          <div> Napisz komentarz</div>
+          <div >
+            <textarea name="comment" rows="5" cols="100">  </textarea>
+          </div>
+            <input class="btn btn-primary" type="submit" value="Skomentuj">
+      </form>
+    </div>
+</div>
+<hr style="background-color: rgb(156, 156, 156, 0.4); margin: 20px 25px 0px 25px;">
+
+<div class="view-panel">
+  <div>
+    <h2 style="padding-bottom: 10px;"> Ostatnie komentarze</h2>
+    {% for comment in comment_list %}
+  <div class="card card_comment" style="padding: 0; width: 720px">
+      <div class="card-header">
+        Skomentował: <b>  {{ comment.commenter }}</b>  
+      </div>
+   <div class="card-body">
+       <blockquote class="blockquote mb-0">
+           <p>{{ comment }}</p>
+           <footer class="blockquote-footer"><cite title="Source Title">{{ comment.date }}</cite></footer>
+       </blockquote>
+   </div>
+  </div>
+  {% endfor %}
+</div>
+</div>
+  {% endif %}
+
+
+  {% if user.is_authenticated == 0 %}
+<div id="container">
+  <div class="view-panel">
+    <div class="column">
+          <img class="column_card" src="{{ listing.image }}" alt="Card image cap" ><br>
+    </div>
+
+    <div class="column" style="width: 50%;">
+      <div class="column_card" >
+        <div class="row1">
+            <div class="card-body" > 
+              <h4 style="padding-bottom: 20px;font-size: x-large;" class="card-title"> {{ listing.title }}</h4>
+              <div class="card-text">Sprzedawca: <b>{{ seller }}</b> </div>
+              {% if winnerr !=  None %}
+                  <div class="card-text">Cena:<strong>  {{ listing.highest_bid }}zł</strong></div> 
+              {% elif winner ==  None %}
+                  <div class="card-text">Cena:<strong>  {{ listing.starting_bid }}zł</strong></div> 
+              {% endif %}
+
+        </div>
+        </div>
+
+        <div class="row2" >
+          <div class="card-body"  > 
+            <form action="{% url 'login' %}" method="POST" class="column" style="width: 100%;">
+              {% csrf_token %}
+              <div  style="color: rgba(10, 10, 10, 0.822);"> <h3> Aby złożyć ofertę należy </h3></div>
+              <div  style="color: rgba(10, 10, 10, 0.692);"> <h4 >się zalogować </h4></div>
+              <div style="padding-top: 20px;">  
+                <a href="{% url 'login' %}" type="submit" role="button" class="btn btn-primary btn">Zaloguj</a>
+              </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="view-panel">
+      <div class="listing_card" >
+        <h4 > {{ listing.title }}</h4>
+        <p >{{listing.description }}</p>
+
+        <p  style="font-size: smaller;"> Utworzył {{ listing.created_at }}</p>
+    </div>
+  </div>
+  <div class="view-panel">
+    <div class="listing_card">
+      <form action="{% url 'add_comment' listing.id %}" method="POST">
+          {% csrf_token %}
+          <div> Napisz komentarz</div>
+          <div >
+            <textarea name="comment" rows="5" cols="100">  </textarea>
+          </div>
+            <input class="btn btn-primary" type="submit" value="Comment">
+      </form>
+    </div>
+</div>
+<hr style="background-color: rgb(156, 156, 156, 0.4); margin: 20px 25px 0px 25px;">
+
+<div class="view-panel>
+  <div>
+    <h2 style="padding-bottom: 10px;"> Ostatnie komentarze</h2>
+    {% for comment in comment_list %}
+  <div class="card card_comment" style="padding: 0; width: 720px">
+      <div class="card-header">
+        Skomentował: <b>  {{ comment.commenter }}</b>  
+      </div>
+   <div class="card-body">
+       <blockquote class="blockquote mb-0">
+           <p>{{ comment }}</p>
+           <footer class="blockquote-footer"><cite title="Source Title">{{ comment.date }}</cite></footer>
+       </blockquote>
+   </div>
+  </div>
+</div>
+  {% endfor %}
+{% endif %}
+{% endblock %}
+
+</div>
+</div>

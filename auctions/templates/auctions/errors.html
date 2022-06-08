@@ -1,0 +1,16 @@
+{% extends "auctions/layout.html" %}
+
+<!-- Widok odpowiedzialny za wyświetlanie strony błędu :brak kategorii: -->
+{% block title %}
+    error
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="listing_footer">
+    <div class="alert alert-secondary" style="text-align: center" role="alert">
+      {{message}}
+    </div>
+  </div>            
+</div>
+{% endblock %}
